@@ -19,9 +19,9 @@ function AddSchool() {
       formData.append("state", data.state);
       formData.append("contact", data.contact);
       formData.append("email_id", data.email_id);
-      formData.append("image", data.image[0]); // Correctly append the file
+      formData.append("image", data.image[0]); 
 
-      console.log("FormData content:", Array.from(formData.entries())); // Debugging
+      console.log("FormData content:", Array.from(formData.entries()));
 
       const response = await axios.post(
         "http://localhost:5000/api/schools",

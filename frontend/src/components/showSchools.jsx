@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./showSchools.css";
+import { schoolImage } from "../imageString";
 
 function ShowSchools() {
   const [schools, setSchools] = useState([]);
@@ -37,11 +38,11 @@ function ShowSchools() {
           schools.map((school) => (
             <div key={school.id} className="school-card">
               <img
-                src={school.image} // Use full URL provided by the backend
+                src={`http://localhost:5000${school.image}` }
                 alt={school.name}
                 className="school-image"
                 onError={(e) => {
-                  e.target.src = "/path/to/default-image.jpg"; // Fallback image
+                  e.target.src = schoolImage;
                 }}
               />
               <div className="school-details">

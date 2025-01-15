@@ -3,12 +3,12 @@ const mysql = require("mysql");
 const multer = require("multer");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-app.use("/schoolImages", express.static("schoolImages")); // Serve static images
-
+app.use("/schoolImages", express.static("schoolImages"));
 // MySQL Connection
 const db = mysql.createConnection({
   host: "localhost",
@@ -24,17 +24,32 @@ db.connect((err) => {
 
 // Multer Configuration
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "schoolImages/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, "schoolImages");
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + file.originalname;
+    cb(null, uniqueSuffix);
+  },
 });
-const upload = multer({ storage });
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png"];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error("Only image files are allowed."));
+    }
+    cb(null, true);
+  },
+});
 
 // Add School API
 app.post("/api/schools", upload.single("image"), (req, res) => {
   const { name, address, city, state, contact, email_id } = req.body;
-  const image = req.file ? req.file.filename : null; // Save only the filename
+  const image = req.file ? `${req.file.filename}` : null;
 
-  // Check if required fields are provided
   if (!name || !address || !city || !state || !contact || !email_id || !image) {
     return res
       .status(400)
@@ -53,7 +68,9 @@ app.post("/api/schools", upload.single("image"), (req, res) => {
           .status(500)
           .json({ error: "Failed to add school", details: err });
       }
-      res.status(200).json({ message: "School added successfully!" });
+      res
+        .status(200)
+        .json({ message: "School added successfully!", data: res.body });
     }
   );
 });
@@ -66,7 +83,7 @@ app.get("/api/schools", (req, res) => {
       name, 
       address, 
       city, 
-      CONCAT('http://localhost:5000/schoolImages/', image) AS image 
+      CONCAT('/schoolImages/', image) AS image 
     FROM schools
   `;
   db.query(sql, (err, result) => {
@@ -79,6 +96,9 @@ app.get("/api/schools", (req, res) => {
     res.json(result);
   });
 });
+app.use("/schoolImages", express.static(path.join(__dirname, "schoolImages")));
+
+app.get("/images/:imageId");
 
 // Start Server
 app.listen(5000, () => {
