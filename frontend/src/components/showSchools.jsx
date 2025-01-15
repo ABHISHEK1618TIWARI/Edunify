@@ -9,12 +9,10 @@ function ShowSchools() {
   useEffect(() => {
     const fetchSchools = async () => {
       try {
-        console.log("Fetching schools..."); // Log before fetching
-        const response = await axios.get("http://localhost:5000/api/schools"); // Ensure this is the correct endpoint
-        console.log("Fetched Schools:", response.data); // Log response data
+        const response = await axios.get("http://localhost:5000/api/schools");
         setSchools(response.data);
       } catch (error) {
-        console.error("Error fetching schools:", error); // Log error
+        console.error("Error fetching schools:", error);
       } finally {
         setLoading(false);
       }
@@ -39,12 +37,12 @@ function ShowSchools() {
           schools.map((school) => (
             <div key={school.id} className="school-card">
               <img
-                src={`http://localhost:5000/schoolImages/${school.image}`} // Make sure the path is correct
+                src={school.image} // Use full URL provided by the backend
                 alt={school.name}
                 className="school-image"
                 onError={(e) => {
-                  e.target.src = "path/to/default-image.jpg";
-                }} // Add a default image for fallback
+                  e.target.src = "/path/to/default-image.jpg"; // Fallback image
+                }}
               />
               <div className="school-details">
                 <h3 className="school-name">{school.name}</h3>
